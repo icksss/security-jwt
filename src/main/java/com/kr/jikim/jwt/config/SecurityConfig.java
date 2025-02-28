@@ -2,6 +2,7 @@ package com.kr.jikim.jwt.config;
 
 import java.util.Collections;
 
+import com.kr.jikim.jwt.repository.RefreshRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -24,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil12 jwtUtil;
+    private final CookieUtil cookieUtil;
+    private final RefreshRepository refreshRepository;
     
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -42,7 +46,7 @@ public class SecurityConfig {
         //cors 설정 
         /**
          * 1. Spring filter 처리해야 token 이 전달 된다.(안하면 로그인필터같은 놈들이 문제가됨)
-         * 2. spring security && 와 Controller 레벨에서 Configuration WebMvcConfigurer 를 구현 해야 한다.
+         * 2. spring security filter 와 Controller 레벨에서 Configuration WebMvcConfigurer 를 구현 해야 한다.
          * 둘다 되야 정확히 처리된다.
          */
         http
@@ -77,7 +81,8 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login", "/", "/join").permitAll()
+                .requestMatchers("/login", "/", "/join","/reissue").permitAll()  //reissue refresh를 재발급하는 Url
+                .requestMatchers("/user").hasRole("USER")
                 .requestMatchers("/admin").hasRole("ADMIN")
                 .anyRequest().authenticated());
         //로그인 필터 추가
@@ -96,7 +101,9 @@ public class SecurityConfig {
         http
             .addFilterBefore(new JWTFiler(jwtUtil), LoginFilter.class);
         http
-            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil,cookieUtil,refreshRepository), UsernamePasswordAuthenticationFilter.class);
+        http
+            .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
         //세션설정(SessionCreationPolicy.STATELESS 서버가 세션정보를 계속 가지고 있지 않음.)
         http
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
