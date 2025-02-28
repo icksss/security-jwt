@@ -38,7 +38,8 @@ public class JWTUtil12 {
 
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
-
+    
+    //access 1개를 발급하기 위한 메소드
     public String createJwt(String username, String role, Long expiredMs) {
 
         return Jwts.builder()
@@ -50,7 +51,25 @@ public class JWTUtil12 {
                 .signWith(secretKey)
                 .compact();
     }
+    
+    //access, refresh token 발급을 위한 메소드
+    public String createJwt(String category, String username, String role, Long expiredMs) {
 
+        return Jwts.builder()
+                .claim("category", category)
+                .claim("username", username)
+                .claim("role", role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey)
+                .compact();
+    }
+    //토큰 판단용
+    public String getCategory(String token) {
+
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
+    }
+    //커스텀 속성
     public String getJikim(String token) {
 
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("jikim", String.class);

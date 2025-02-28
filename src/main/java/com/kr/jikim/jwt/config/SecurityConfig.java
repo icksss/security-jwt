@@ -42,7 +42,7 @@ public class SecurityConfig {
         //cors 설정 
         /**
          * 1. Spring filter 처리해야 token 이 전달 된다.(안하면 로그인필터같은 놈들이 문제가됨)
-         * 2. spring security && 와 Controller 레벨에서 Configuration WebMvcConfigurer 를 구현 해야 한다.
+         * 2. spring security filter 와 Controller 레벨에서 Configuration WebMvcConfigurer 를 구현 해야 한다.
          * 둘다 되야 정확히 처리된다.
          */
         http

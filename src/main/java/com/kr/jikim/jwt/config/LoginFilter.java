@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
+import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,10 +76,30 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 String role = it.next().getAuthority();
                 logger.info("username: " + username);
                 logger.info("role: " + role);
-
+                /*
+                * token 1개 발급
+                *
                 String token = jwtUtil.createJwt(username, role, 60 * 60 * 60 * 10L);
                 logger.info("token: " + token);
-                response.addHeader("Authorization", "Bearer " + token); 
+                response.addHeader("Authorization", "Bearer " + token);
+                */
+
+                /*
+                * access, refresh 토큰 2개 생성
+                * 1. 헤더에 access 발급
+                * 2. 쿠키에 refresh 발급
+                * */
+                //토큰 생성
+                String access = jwtUtil.createJwt("access", username, role, 600000L);  //10분 생명주기를 다르게 access는 짧게
+                String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);  // 24시간 refresh 는 길게
+
+                //응답 설정
+                response.setHeader("access", access);
+                response.addCookie(createCookie("refresh", refresh));
+                response.setStatus(HttpStatus.OK.value());
+
+
+
                 // response.setContentType("application/json");
                 // response.setCharacterEncoding("UTF-8");
                 // response.getWriter().write("{\"token\":\"" + token + "\"}");
@@ -96,5 +118,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 // response.getWriter().write("{\"message\":\"로그인 실패\"}");
         // TODO Auto-generated method stub
         // super.unsuccessfulAuthentication(request, response, failed);
+    }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60);
+        //cookie.setSecure(true);  https 시
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);  //javascript 로 접근하지 못하도록
+
+        return cookie;
     }
 }
