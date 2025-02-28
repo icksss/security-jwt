@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil12 jwtUtil;
+    private final CookieUtil cookieUtil;
     
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -97,7 +98,7 @@ public class SecurityConfig {
         http
             .addFilterBefore(new JWTFiler(jwtUtil), LoginFilter.class);
         http
-            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil,cookieUtil), UsernamePasswordAuthenticationFilter.class);
         //세션설정(SessionCreationPolicy.STATELESS 서버가 세션정보를 계속 가지고 있지 않음.)
         http
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

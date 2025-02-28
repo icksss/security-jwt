@@ -1,10 +1,12 @@
 package com.kr.jikim.jwt.controller;
 
+import com.kr.jikim.jwt.config.CookieUtil;
 import com.kr.jikim.jwt.config.JWTUtil12;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,10 +20,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ReissueController {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final JWTUtil12 jwtUtil;
+    private final CookieUtil cookieUtil;
 
-    public ReissueController(JWTUtil12 jwtUtil) {
+    public ReissueController(JWTUtil12 jwtUtil, CookieUtil cookieUtil) {
 
         this.jwtUtil = jwtUtil;
+        this.cookieUtil = cookieUtil;
     }
 
     @PostMapping("/reissue")
@@ -68,8 +72,12 @@ public class ReissueController {
         //make new JWT
         String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
         log.info("ReissueController!! newAccess : {}", newAccess);
+        //refresh rotate ( refresh 토큰으로 access token 발급시 refresh token도 새로 발급
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
         //response
         response.setHeader("access", newAccess);
+        //refresh rotate ( refresh 토큰으로 access token 발급시 refresh token도 새로 쿠키로 발급
+        response.addCookie(cookieUtil.createCookie("refresh", newRefresh));
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

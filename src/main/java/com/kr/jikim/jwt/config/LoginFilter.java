@@ -28,6 +28,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AuthenticationManager authenticationManager;
     private final JWTUtil12 jwtUtil;
+    private final CookieUtil cookieUtil;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -95,7 +96,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
                 //응답 설정
                 response.setHeader("access", access);
-                response.addCookie(createCookie("refresh", refresh));
+                response.addCookie(cookieUtil.createCookie("refresh", refresh));
                 response.setStatus(HttpStatus.OK.value());
 
 
@@ -120,14 +121,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // super.unsuccessfulAuthentication(request, response, failed);
     }
 
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);  https 시
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);  //javascript 로 접근하지 못하도록
-
-        return cookie;
-    }
+//    private Cookie createCookie(String key, String value) {
+//
+//        Cookie cookie = new Cookie(key, value);
+//        cookie.setMaxAge(24*60*60);
+//        //cookie.setSecure(true);  https 시
+//        //cookie.setPath("/");
+//        cookie.setHttpOnly(true);  //javascript 로 접근하지 못하도록
+//
+//        return cookie;
+//    }
 }
