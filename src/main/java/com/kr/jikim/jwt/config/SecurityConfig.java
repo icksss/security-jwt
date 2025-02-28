@@ -2,6 +2,7 @@ package com.kr.jikim.jwt.config;
 
 import java.util.Collections;
 
+import com.kr.jikim.jwt.repository.RefreshRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +26,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil12 jwtUtil;
     private final CookieUtil cookieUtil;
+    private final RefreshRepository refreshRepository;
     
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -98,7 +100,7 @@ public class SecurityConfig {
         http
             .addFilterBefore(new JWTFiler(jwtUtil), LoginFilter.class);
         http
-            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil,cookieUtil), UsernamePasswordAuthenticationFilter.class);
+            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil,cookieUtil,refreshRepository), UsernamePasswordAuthenticationFilter.class);
         //세션설정(SessionCreationPolicy.STATELESS 서버가 세션정보를 계속 가지고 있지 않음.)
         http
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -2,8 +2,11 @@ package com.kr.jikim.jwt.config;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
+import com.kr.jikim.jwt.entity.RefreshEntity;
+import com.kr.jikim.jwt.repository.RefreshRepository;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil12 jwtUtil;
     private final CookieUtil cookieUtil;
+    private final RefreshRepository refreshRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -94,6 +98,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 String access = jwtUtil.createJwt("access", username, role, 600000L);  //10분 생명주기를 다르게 access는 짧게
                 String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);  // 24시간 refresh 는 길게
 
+                //토큰 저장
+                //Refresh 토큰 저장
+                addRefreshEntity(username, refresh, 86400000L);
+
                 //응답 설정
                 response.setHeader("access", access);
                 response.addCookie(cookieUtil.createCookie("refresh", refresh));
@@ -131,4 +139,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 //
 //        return cookie;
 //    }
+
+    //refresh token DB에 저장
+    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
+
+        Date date = new Date(System.currentTimeMillis() + expiredMs);
+
+        RefreshEntity refreshEntity = new RefreshEntity();
+        refreshEntity.setUsername(username);
+        refreshEntity.setRefresh(refresh);
+        refreshEntity.setExpiration(date.toString());
+
+        refreshRepository.save(refreshEntity);
+    }
 }
