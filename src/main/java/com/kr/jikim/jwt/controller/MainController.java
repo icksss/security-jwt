@@ -20,8 +20,6 @@ public class MainController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @GetMapping("/")
-
-    
     public String mainp() {
         logger.info("mainController");
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -38,5 +36,23 @@ public class MainController {
         logger.info("auth: " + ((CustomUserDetails)authentication.getPrincipal()).getJikim());
         // CustomUserDetails customUserDetails = (CustomUserDetails)authResult.getPrincipal();
         return "mainController";
+    }
+    @GetMapping("/user")
+    public String user() {
+        logger.info("mainController user");
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        logger.info("name: " + name);
+        String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().iterator().next().getAuthority();
+        logger.info("role: " + role);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        logger.info("authentication: " + authentication);
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        logger.info("authorities: " + authorities);
+        Iterator<? extends GrantedAuthority> iter = authorities.iterator();
+        GrantedAuthority auth = iter.next();
+        logger.info("auth: " + ((CustomUserDetails)authentication.getPrincipal()).getJikim());
+        // CustomUserDetails customUserDetails = (CustomUserDetails)authResult.getPrincipal();
+        return "mainController user";
     }
 }
