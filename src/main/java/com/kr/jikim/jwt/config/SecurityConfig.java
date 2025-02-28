@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -101,6 +102,8 @@ public class SecurityConfig {
             .addFilterBefore(new JWTFiler(jwtUtil), LoginFilter.class);
         http
             .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil,cookieUtil,refreshRepository), UsernamePasswordAuthenticationFilter.class);
+        http
+            .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
         //세션설정(SessionCreationPolicy.STATELESS 서버가 세션정보를 계속 가지고 있지 않음.)
         http
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
