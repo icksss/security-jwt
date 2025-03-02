@@ -5,6 +5,8 @@ import java.util.Collections;
 import com.kr.jikim.jwt.repository.RefreshRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,6 +43,22 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RoleHierarchy roleHierarchy() {
+        //버전업으로 변경됨 (6.3.x 부터 사용안됨)
+//        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+//        hierarchy.setHierarchy("ROLE_ADMIN > ROLE_MANAGER\n" +
+//                "ROLE_MANAGER > ROLE_USER");
+//        return hierarchy;
+        //withDefaultRolePrefix 자동으로 ROLE_ 붙혀줌
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("MANAGER")
+                .role("MANAGER").implies("USER")
+                .build();
+
+    }
+
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         //cors 설정 
@@ -57,7 +75,7 @@ public class SecurityConfig {
 
                     CorsConfiguration configuration = new CorsConfiguration();
 
-                    configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                    configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
                     configuration.setAllowedMethods(Collections.singletonList("*"));
                     configuration.setAllowCredentials(true);
                     configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -81,9 +99,12 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login", "/", "/join","/reissue").permitAll()  //reissue refresh를 재발급하는 Url
-                .requestMatchers("/user").hasRole("USER")
-                .requestMatchers("/admin").hasRole("ADMIN")
+                .requestMatchers("/login", "/", "/api/join", "/reissue", "/test/**").permitAll()  //reissue refresh를 재발급하는 Url.requestMatchers("/user").hasRole("USER")
+//                .requestMatchers("/api/user").hasRole("USER")
+//                .requestMatchers("/api/admin").hasRole("ADMIN")
+                    .requestMatchers("/api/user").hasAnyRole("USER")
+                    .requestMatchers("/api/manager").hasAnyRole("MANAGER")
+                    .requestMatchers("/api/admin").hasAnyRole("ADMIN")
                 .anyRequest().authenticated());
         //로그인 필터 추가
         /**

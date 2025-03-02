@@ -1,5 +1,6 @@
 package com.kr.jikim.jwt.controller;
 
+import com.kr.jikim.jwt.common.ApiResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -8,7 +9,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ResponseBody
 public class AdminController {
     @GetMapping("/admin")
-    public String adminP() {
-        return "adminController";
+    public ApiResponse<?> adminP() {
+        return ApiResponse.ok("adminController");
+    }
+
+    @GetMapping("/api/admin")
+    public ApiResponse<?> successWithMessage() {
+        return ApiResponse.ok("ok");
     }
 }

@@ -1,12 +1,16 @@
 package com.kr.jikim.jwt.config;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kr.jikim.jwt.dto.LoginDTO;
 import com.kr.jikim.jwt.entity.RefreshEntity;
 import com.kr.jikim.jwt.repository.RefreshRepository;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StreamUtils;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -38,9 +43,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
 
-                /* JSON 형식으로 데이터를 받아오는 경우
-                 * LoginDTO loginDTO = new LoginDTO();
-                 * try {
+                /* JSON 형식으로 데이터를 받아오는 경우 */
+                  LoginDTO loginDTO = new LoginDTO();
+                  try {
                         ObjectMapper objectMapper = new ObjectMapper();
                         ServletInputStream inputStream = request.getInputStream();
                         String messageBody = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
@@ -51,14 +56,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                     }
                         String username = loginDTO.getUsername();
                         String password = loginDTO.getPassword();
-                */
 
-                String username = obtainUsername(request);
-                String password = obtainPassword(request);
-                String role = request.getParameter("role");
+
+//                String username = obtainUsername(request);
+//                String password = obtainPassword(request);
+//                String role = request.getParameter("role");
                 logger.info("username: " + username);
                 logger.info("password: " + password);
-                logger.info("role: " + role);
+//                logger.info("role: " + role);
                 // List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                 // authorities.add(new SimpleGrantedAuthority(role));
 

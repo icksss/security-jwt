@@ -2,6 +2,9 @@ package com.kr.jikim.jwt.controller;
 
 import java.util.logging.Logger;
 
+import com.kr.jikim.jwt.common.ApiResponse;
+import com.kr.jikim.jwt.error.CustomException;
+import com.kr.jikim.jwt.error.ErrorCode;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,15 +21,15 @@ import lombok.RequiredArgsConstructor;
 public class JoinController {
     private final Logger logger = Logger.getLogger(JoinController.class.getName());
     private final JoinService joinService;
-    @PostMapping("/join")
-    public String join(@RequestBody JoinDTO joinDTO) {
+    @PostMapping("/api/join")
+    public ApiResponse<?> join(@RequestBody JoinDTO joinDTO) {
         logger.info("회원가입 요청");
         logger.info(joinDTO.toString());
         try {
             joinService.join(joinDTO);
         } catch (RuntimeException e) {
-            return "이미 가입된 회원입니다.";
+            throw new CustomException(ErrorCode.CONFLICT);
         }
-        return "회원가입 완료";
+        return ApiResponse.created("created");
     }
 }
